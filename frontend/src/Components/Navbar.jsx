@@ -22,7 +22,7 @@ export const Navbar = () => {
               <Zap className="w-6 h-6 text-white" />
             </div>
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
-              SparkLab
+              AbhiyanSetu 
             </span>
           </Link>
 
