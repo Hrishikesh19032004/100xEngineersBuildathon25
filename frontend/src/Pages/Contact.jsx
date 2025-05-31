@@ -28,13 +28,13 @@ const Contact = () => {
     {
       icon: <Phone className="w-6 h-6" />,
       title: 'Phone',
-      details: '+1 (555) 123-4567',
+      details: '+91 93216 40061',
       action: () => window.open('tel:+15551234567')
     },
     {
       icon: <Mail className="w-6 h-6" />,
       title: 'Email',
-      details: 'hello@sparklab.com',
+      details: 'hello@AbhiyanSetu.com',
       action: () => window.open('mailto:hello@sparklab.com')
     },
     {

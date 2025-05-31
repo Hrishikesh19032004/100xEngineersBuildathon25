@@ -6,6 +6,7 @@ import { useState,  } from 'react';
 import Home from './Pages/Home';
 import Login from './Pages/Login';
 import Contact from './Pages/Contact';
+import Footer from './Components/Footer';
 
 
 const App = () => {
@@ -18,6 +19,7 @@ const App = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/contact" element={<Contact />} />
         </Routes>
+        <Footer/>
       </div>
     </BrowserRouter>
   );
