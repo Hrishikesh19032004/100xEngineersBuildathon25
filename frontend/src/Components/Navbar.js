@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Menu, X, Zap, LogOut, User, Building2, Sparkles, ChevronDown } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import GoogleTranslate from '../pages/GoogleTranslate';
 
 export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -28,9 +29,11 @@ export const Navbar = () => {
       return [
         { name: 'Home', path: '/' },
         { name: 'Dashboard', path: '/business/dashboard' },
-        { name: 'Campaigns', path: '/business/campaigns' },
-        { name: 'Creators', path: '/business/creators' },
+        { name: 'CRS', path: '/business/recommender' },
+        { name: 'Channels', path: '/business/ytchecker' },
         { name: 'Analytics', path: '/business/analytics' },
+        // { name: 'Outreach', path: '/business/outreach' },
+        { name: 'Contract', path: '/business/confirm' },
         { name: 'Messages', path: '/business/chats' }
       ];
     } else if (user.type === 'creator') {

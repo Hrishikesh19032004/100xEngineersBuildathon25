@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Menu, X, Zap, Users, Mail, Phone, MapPin, Eye, Target, Rocket, Star, ArrowRight, User, Lock } from 'lucide-react';
+import {Mail, Phone, MapPin } from 'lucide-react';
 const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',

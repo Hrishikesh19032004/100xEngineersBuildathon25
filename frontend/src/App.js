@@ -118,6 +118,14 @@ import {Navbar} from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Contact from './pages/Contact';
+import GoogleTranslate from './pages/GoogleTranslate';
+import BrandCreatorRecommender from './pages/BrandCreatorRecommender';
+import YTChecker from './pages/YTChecker';
+import Analytics from './pages/Analytics';
+import About from './pages/About';
+import ContractPage from './pages/ConfirmContractPage';
+import Outreach from './pages/OutreachPage';
+import RazorpayPaymentDemo from './components/Payement';
 
 function App() {
   const { user, loading } = useAuth();
@@ -133,6 +141,8 @@ function App() {
       {/* Home page as main route */}
       <Route path="/" element={<Home />} />
       {/* <Route path="/login" element={<Login />} /> */}
+      <Route path="/about" element={<About />} />
+
       <Route path="/contact" element={<Contact />} />
       
       {/* Public Routes */}
@@ -148,11 +158,36 @@ function App() {
           path="/business/dashboard" 
           element={user?.type === 'business' ? <BusinessDashboard /> : <Navigate to="/business/login" />} 
         />
+          <Route 
+          path="/business/confirm" 
+          element={user?.type === 'business' ? <ContractPage /> : <Navigate to="/business/login" />} 
+        />
+          <Route 
+          path="/business/outreach" 
+          element={user?.type === 'business' ? <Outreach /> : <Navigate to="/business/login" />} 
+        />
+        
         <Route 
           path="/business/chats" 
           element={user?.type === 'business' ? <BusinessChats /> : <Navigate to="/business/login" />} 
         />
-        
+        <Route 
+          path="/business/recommender" 
+          element={user?.type === 'business' ? <BrandCreatorRecommender /> : <Navigate to="/business/login" />} 
+        />
+         <Route 
+          path="/business/ytchecker" 
+          element={user?.type === 'business' ? <YTChecker /> : <Navigate to="/business/login" />} 
+        />
+          <Route 
+          path="/business/analytics" 
+          element={user?.type === 'business' ? <Analytics /> : <Navigate to="/business/login" />} 
+        />
+         
+          <Route 
+          path="/business/payement" 
+          element={user?.type === 'business' ? <RazorpayPaymentDemo /> : <Navigate to="/business/login" />} 
+        />
         {/* Creator Routes */}
         <Route 
           path="/creator/dashboard" 
