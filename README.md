@@ -3,6 +3,7 @@
 ## Overview
 
 InfluencerConnect is a comprehensive influencer marketing platform that seamlessly bridges the gap between brands and content creators through intelligent automation and data-driven insights. Our platform leverages advanced machine learning algorithms to deliver precise creator-brand matching, automated contract management, and real-time campaign analytics.
+
 ![WhatsApp Image 2025-06-02 at 03 28 25](https://github.com/user-attachments/assets/172e1b0a-25bb-4d2a-8078-1432c234324e)
 
 ##  Key Features
