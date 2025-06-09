@@ -8,6 +8,7 @@ export default function YTChecker() {
 
   const handleSubmit = async () => {
     if (!channel.trim()) return;
+    setResult(null); // clear previous result
     setLoading(true);
     try {
       const res = await axios.post("http://localhost:5002/analyze", {
@@ -45,6 +46,36 @@ export default function YTChecker() {
           </button>
         </div>
 
+        {/* Loading message and spinner */}
+        {loading && !result && (
+          <div className="flex items-center space-x-3 bg-gray-700/40 p-4 rounded-xl mb-6">
+            <svg
+              className="animate-spin h-6 w-6 text-purple-400"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+            <p className="text-purple-300 font-semibold">
+              Please wait, this may take up to 20 seconds...
+            </p>
+          </div>
+        )}
+
+        {/* Result output */}
         {result && (
           <div className="bg-gray-700/40 p-6 rounded-xl space-y-3">
             <p>

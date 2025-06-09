@@ -1,6 +1,6 @@
-// File: src/context/AuthContext.js
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import axios from 'axios';
+import api from '../api';
+import { jwtDecode } from 'jwt-decode';
 
 const AuthContext = createContext();
 
@@ -9,148 +9,110 @@ export function useAuth() {
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const token = localStorage.getItem('token');
+    if (token) {
       try {
-        setUser(JSON.parse(storedUser));
+        const decoded = jwtDecode(token);
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        fetchUserProfile(decoded);
       } catch (error) {
-        console.error('Failed to parse user data', error);
-        localStorage.removeItem('user');
+        console.error('Invalid token:', error);
+        logout();
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  // Business authentication functions
-  const businessLogin = async (email, password) => {
+  const fetchUserProfile = async (decoded) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/business/login', { email, password });
-      const userData = { 
-        ...response.data.user, 
-        type: 'business', 
-        token: response.data.token 
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true, user: userData };
+      const response = await api.get('http://localhost:5000/api/auth/me'); // assuming this returns the user with `profile_completed`
+      const user = response.data;
+      setCurrentUser({
+        ...user,
+        ...decoded,
+        profileCompleted: user.profile_completed,
+      });
     } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.error || 'Login failed' 
-      };
+      console.error('Failed to fetch user profile:', error);
+      logout();
+    } finally {
+      setLoading(false);
     }
   };
 
-  const businessRegister = async (businessData) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/business/register', businessData);
-      const userData = { 
-        ...response.data.user, 
-        type: 'business', 
-        token: response.data.token 
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true, user: userData };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.error || 'Registration failed' 
-      };
-    }
+  const login = async (email, password) => {
+    const response = await api.post('http://localhost:5000/api/auth/login', { email, password });
+    const { token, user } = response.data;
+
+    localStorage.setItem('token', token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    const decoded = jwtDecode(token);
+    setCurrentUser({
+      ...user,
+      ...decoded,
+      profileCompleted: user.profile_completed,
+    });
+
+    return user;
   };
 
-  // Creator authentication functions
-  const creatorLogin = async (email, password) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/creator/login', { email, password });
-      const userData = { 
-        ...response.data.user, 
-        type: 'creator', 
-        token: response.data.token,
-        profileCompleted: response.data.profileCompleted
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { 
-        success: true, 
-        profileCompleted: response.data.profileCompleted,
-        user: userData
-      };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.error || 'Login failed' 
-      };
-    }
-  };
+  const signup = async (userData) => {
+    const response = await api.post('http://localhost:5000/api/auth/signup', userData);
+    const { token, user } = response.data;
 
-  const creatorRegister = async (creatorData) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/creator/register', creatorData);
-      const userData = { 
-        ...response.data.user, 
-        type: 'creator', 
-        token: response.data.token 
-      };
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      return { success: true, user: userData };
-    } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.error || 'Registration failed' 
-      };
-    }
+    localStorage.setItem('token', token);
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    const decoded = jwtDecode(token);
+    setCurrentUser({
+      ...user,
+      ...decoded,
+      profileCompleted: user.profile_completed,
+    });
+
+    return user;
   };
 
   const logout = () => {
-    setUser(null);
-    localStorage.removeItem('user');
+    localStorage.removeItem('token');
+    delete api.defaults.headers.common['Authorization'];
+    setCurrentUser(null);
   };
 
-  const updateCreatorProfile = async (profileData) => {
+  const refreshToken = async () => {
     try {
-      const response = await axios.post('http://localhost:5000/api/creator/profile', profileData, {
-        headers: { Authorization: `Bearer ${user.token}` }
-      });
-      
-      // Update user in state and localStorage
-      const updatedUser = { 
-        ...user, 
-        ...profileData, 
-        profileCompleted: true 
-      };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      return { success: true };
+      const response = await api.post('http://localhost:5000/api/auth/refresh');
+      const { token } = response.data;
+
+      localStorage.setItem('token', token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+      const decoded = jwtDecode(token);
+      await fetchUserProfile(decoded);
     } catch (error) {
-      return { 
-        success: false, 
-        message: error.response?.data?.error || 'Profile update failed' 
-      };
+      logout();
     }
   };
 
   const value = {
-    user,
-    loading,
-    businessLogin,
-    businessRegister,
-    creatorLogin,
-    creatorRegister,
+    currentUser,
+    login,
+    signup,
     logout,
-    updateCreatorProfile
+    refreshToken,
+    loading,
   };
 
   return (
     <AuthContext.Provider value={value}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 }

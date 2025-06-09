@@ -1,214 +1,115 @@
-// import logo from './logo.svg';
-// import './App.css';
-// import {Navbar} from './Components/Navbar';
-// import { useState,  } from 'react';
-// import Home from './Pages/Home';
-// // import Login from './Pages/Login';
-// // import Contact from './Pages/Contact';
-// // import Footer from './Components/Footer';
 
-
-// // const App = () => {
-// //   return (
- 
-// //       <div className="App">
-// //         <Navbar />
-// //         <Routes>
-// //           <Route path="/" element={<Home />} />
-// //           <Route path="/login" element={<Login />} />
-// //           <Route path="/contact" element={<Contact />} />
-// //         </Routes>
-// //         <Footer/>
-// //       </div>
-
-// //   );
-// // };
-
-// // export default App;
-
-
-
-// // File: src/App.js
-// import React from 'react';
-// import { Routes, Route, Navigate } from 'react-router-dom';
-// import BusinessRegister from './pages/business/BusinessRegister';
-// import BusinessLogin from './pages/business/BusinessLogin';
-// import CreatorRegister from './pages/creator/CreatorRegister';
-// import CreatorLogin from './pages/creator/CreatorLogin';
-// import BusinessDashboard from './pages/business/BusinessDashboard';
-// import CreatorDashboard from './pages/creator/CreatorDashboard';
-// import CreatorProfile from './pages/creator/CreatorProfile';
-// import BusinessChats from './pages/business/BusinessChats';
-// import Chat from './pages/common/Chat';
-// import Layout from './components/Layout';
-// import { useAuth } from './context/AuthContext';
-
-// function App() {
-//   const { user, loading } = useAuth();
-  
-//   if (loading) {
-//     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-//   }
-  
-//   return (
-//     <>
-//     <Navbar />
-//     <Routes>
-//       {/* Public Routes */}
-//       <Route path="/business/register" element={<BusinessRegister />} />
-//       <Route path="/business/login" element={<BusinessLogin />} />
-//       <Route path="/creator/register" element={<CreatorRegister />} />
-//       <Route path="/creator/login" element={<CreatorLogin />} />
-      
-//       {/* Protected Routes */}
-//       <Route element={<Layout />}>
-//         {/* Business Routes */}
-//         <Route 
-//           path="/business/dashboard" 
-//           element={user?.type === 'business' ? <BusinessDashboard /> : <Navigate to="/business/login" />} 
-//         />
-//         <Route 
-//           path="/business/chats" 
-//           element={user?.type === 'business' ? <BusinessChats /> : <Navigate to="/business/login" />} 
-//         />
-        
-//         {/* Creator Routes */}
-//         <Route 
-//           path="/creator/dashboard" 
-//           element={user?.type === 'creator' ? <CreatorDashboard /> : <Navigate to="/creator/login" />} 
-//         />
-//         <Route 
-//           path="/creator/profile" 
-//           element={user?.type === 'creator' ? <CreatorProfile /> : <Navigate to="/creator/login" />} 
-//         />
-        
-//         {/* Common Routes */}
-//         <Route 
-//           path="/chat/:sessionId" 
-//           element={user ? <Chat /> : <Navigate to="/" />} 
-//         />
-//       </Route>
-      
-//       {/* Default Redirect */}
-//       <Route path="/" element={<Navigate to={user?.type === 'business' ? "/business/dashboard" : "/creator/dashboard"} />} />
-//       <Route path="*" element={<Navigate to={user?.type === 'business' ? "/business/dashboard" : "/creator/dashboard"} />} />
-//     </Routes>
-//     </>
-//   );
-// }
-
-// export default App;
-
-// File: src/App.js
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import BusinessRegister from './pages/business/BusinessRegister';
-import BusinessLogin from './pages/business/BusinessLogin';
-import CreatorRegister from './pages/creator/CreatorRegister';
-import CreatorLogin from './pages/creator/CreatorLogin';
-import BusinessDashboard from './pages/business/BusinessDashboard';
-import CreatorDashboard from './pages/creator/CreatorDashboard';
-import CreatorProfile from './pages/creator/CreatorProfile';
-import BusinessChats from './pages/business/BusinessChats';
-import Chat from './pages/common/Chat';
-import Layout from './components/Layout';
-import { useAuth } from './context/AuthContext';
-// Added imports from your original code
-import {Navbar} from './components/Navbar';
-import Home from './pages/Home';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import {AuthProvider} from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
+import BusinessDashboard from './pages/BusinessDashboard';
+import CreatorDashboard from './pages/CreatorDashboard';
+import ChatRoom from './pages/ChatRoom';
+import NotFound from './pages/NotFound';
+import Layout from './components/Layout';
+import CompleteProfile from './pages/CompleteProfile';
+import Home from './pages/Home';
 import Contact from './pages/Contact';
-import GoogleTranslate from './pages/GoogleTranslate';
-import BrandCreatorRecommender from './pages/BrandCreatorRecommender';
-import YTChecker from './pages/YTChecker';
-import Analytics from './pages/Analytics';
 import About from './pages/About';
-import ContractPage from './pages/ConfirmContractPage';
-import Outreach from './pages/OutreachPage';
-import RazorpayPaymentDemo from './components/Payement';
+import AppNavbar from './components/AppNavbar';
+import YTChecker from './pages/YTChecker';
+import InfluencerChat from './pages/flask/Chat.jsx';
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#3f51b5',
+    },
+    secondary: {
+      main: '#f50057',
+    },
+    background: {
+      default: '#111827', // Dark background to match
+    },
+  },
+  typography: {
+    fontFamily: 'Roboto, sans-serif',
+  },
+  components: {
+    // Remove default MUI padding/margins
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          margin: 0,
+          padding: 0,
+        },
+        html: {
+          margin: 0,
+          padding: 0,
+        }
+      }
+    }
+  }
+});
 
 function App() {
-  const { user, loading } = useAuth();
-  
-  if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
-  }
-  
   return (
-    <>
-    <Navbar />
-    <Routes>
-      {/* Home page as main route */}
-      <Route path="/" element={<Home />} />
-      {/* <Route path="/login" element={<Login />} /> */}
-      <Route path="/about" element={<About />} />
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <AuthProvider>
+        <Router>
+          <div style={{ margin: 0, padding: 0, minHeight: '100vh' }}>
+            <AppNavbar/>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/ytchecker" element={<YTChecker />} />
+              <Route path="/recommender" element={<InfluencerChat />} />
 
-      <Route path="/contact" element={<Contact />} />
-      
-      {/* Public Routes */}
-      <Route path="/business/register" element={<BusinessRegister />} />
-      <Route path="/business/login" element={<BusinessLogin />} />
-      <Route path="/creator/register" element={<CreatorRegister />} />
-      <Route path="/creator/login" element={<CreatorLogin />} />
-      
-      {/* Protected Routes */}
-      <Route element={<Layout />}>
-        {/* Business Routes */}
-        <Route 
-          path="/business/dashboard" 
-          element={user?.type === 'business' ? <BusinessDashboard /> : <Navigate to="/business/login" />} 
-        />
-          <Route 
-          path="/business/confirm" 
-          element={user?.type === 'business' ? <ContractPage /> : <Navigate to="/business/login" />} 
-        />
-          <Route 
-          path="/business/outreach" 
-          element={user?.type === 'business' ? <Outreach /> : <Navigate to="/business/login" />} 
-        />
-        
-        <Route 
-          path="/business/chats" 
-          element={user?.type === 'business' ? <BusinessChats /> : <Navigate to="/business/login" />} 
-        />
-        <Route 
-          path="/business/recommender" 
-          element={user?.type === 'business' ? <BrandCreatorRecommender /> : <Navigate to="/business/login" />} 
-        />
-         <Route 
-          path="/business/ytchecker" 
-          element={user?.type === 'business' ? <YTChecker /> : <Navigate to="/business/login" />} 
-        />
-          <Route 
-          path="/business/analytics" 
-          element={user?.type === 'business' ? <Analytics /> : <Navigate to="/business/login" />} 
-        />
-         
-          <Route 
-          path="/business/payement" 
-          element={user?.type === 'business' ? <RazorpayPaymentDemo /> : <Navigate to="/business/login" />} 
-        />
-        {/* Creator Routes */}
-        <Route 
-          path="/creator/dashboard" 
-          element={user?.type === 'creator' ? <CreatorDashboard /> : <Navigate to="/creator/login" />} 
-        />
-        <Route 
-          path="/creator/profile" 
-          element={user?.type === 'creator' ? <CreatorProfile /> : <Navigate to="/creator/login" />} 
-        />
-        
-        {/* Common Routes */}
-        <Route 
-          path="/chat/:sessionId" 
-          element={user ? <Chat /> : <Navigate to="/" />} 
-        />
-      </Route>
-      
-      {/* Fallback */}
-      <Route path="*" element={<Navigate to="/" />} />
-    </Routes>
-    </>
+              <Route element={<Layout />}>
+                <Route 
+                  path="/business" 
+                  element={
+                    <ProtectedRoute allowedRoles={['business']}>
+                      <BusinessDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+              
+                <Route 
+                  path="/creator" 
+                  element={
+                    <ProtectedRoute allowedRoles={['creator']}>
+                      <CreatorDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/chat/:id" 
+                  element={
+                    <ProtectedRoute>
+                      <ChatRoom />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Route>
+              <Route 
+                path="/complete-profile" 
+                element={
+                  <ProtectedRoute allowedRoles={['creator']}>
+                    <CompleteProfile />
+                  </ProtectedRoute>
+                } 
+              />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
