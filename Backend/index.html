@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Analytics Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="url"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: translateY(-2px);
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .results {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            display: none;
+        }
+        .metric-card {
+            background: white;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid #e6683c;
+        }
+        .metric-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        .metric-value {
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            background: #fee;
+            color: #c33;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #c33;
+        }
+        .success {
+            background: #efe;
+            color: #363;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border-left: 4px solid #363;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 Instagram Analytics Demo</h1>
+        
+        <div class="input-group">
+            <label for="postUrl">Instagram Post URL:</label>
+            <input 
+                type="url" 
+                id="postUrl" 
+                placeholder="https://www.instagram.com/p/DKLIH6PNIyM/"
+                value="https://www.instagram.com/p/DKLIH6PNIyM/?igsh=bHVmbnh2bHh6dGd2"
+            >
+        </div>
+        
+        <button onclick="fetchAnalytics()" id="fetchBtn">Get Analytics</button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Fetching Instagram analytics...</p>
+        </div>
+        
+        <div id="results" class="results"></div>
+    </div>
+
+    <script>
+        // Instagram Post Analytics using RapidAPI
+        const RAPIDAPI_KEY = 'a791236fe0mshb2f6fac5d4530b9p1e66a4jsn9b16be70a5d0';
+        const RAPIDAPI_HOST = 'instagram-data1.p.rapidapi.com';
+
+        // Function to extract post shortcode from Instagram URL
+        function extractPostShortcode(url) {
+            const match = url.match(/\/p\/([A-Za-z0-9_-]+)/);
+            return match ? match[1] : null;
+        }
+
+        // Function to get post analytics
+        async function getInstagramPostAnalytics(postUrl) {
+            const shortcode = extractPostShortcode(postUrl);
+            
+            if (!shortcode) {
+                throw new Error('Invalid Instagram post URL');
+            }
+
+            const options = {
+                method: 'GET',
+                headers: {
+                    'x-rapidapi-key': RAPIDAPI_KEY,
+                    'x-rapidapi-host': RAPIDAPI_HOST
+                }
+            };
+
+            try {
+                // Try multiple endpoint variations
+                const endpoints = [
+                    `https://${RAPIDAPI_HOST}/v1/post_info?code_or_id_or_url=${shortcode}`,
+                    `https://${RAPIDAPI_HOST}/post/${shortcode}`,
+                    `https://${RAPIDAPI_HOST}/media/${shortcode}`
+                ];
+
+                let response;
+                let data;
+
+                for (const endpoint of endpoints) {
+                    try {
+                        console.log('Trying endpoint:', endpoint);
+                        response = await fetch(endpoint, options);
+                        
+                        if (response.ok) {
+                            data = await response.json();
+                            console.log('API Response:', data);
+                            break;
+                        }
+                    } catch (err) {
+                        console.log('Endpoint failed:', endpoint, err.message);
+                        continue;
+                    }
+                }
+
+                if (!response || !response.ok) {
+                    throw new Error(`API Error: ${response?.status || 'All endpoints failed'}`);
+                }
+
+                return parsePostData(data);
+
+            } catch (error) {
+                console.error('Error fetching post analytics:', error);
+                throw error;
+            }
+        }
+
+        // Function to parse and structure the analytics data
+        function parsePostData(rawData) {
+            console.log('Raw data structure:', rawData);
+            
+            // Handle different API response formats
+            const post = rawData.data || rawData.graphql?.shortcode_media || rawData;
+            
+            if (!post) {
+                throw new Error('No post data found in API response');
+            }
+            
+            return {
+                // Basic Post Info
+                postId: post.id || 'N/A',
+                shortcode: post.shortcode || extractPostShortcode(document.getElementById('postUrl').value),
+                url: post.shortcode ? `https://www.instagram.com/p/${post.shortcode}/` : 'N/A',
+                
+                // Content Details
+                caption: post.edge_media_to_caption?.edges[0]?.node?.text || post.caption?.text || 'No caption available',
+                mediaType: post.__typename || post.media_type || 'Unknown',
+                mediaUrl: post.display_url || post.thumbnail_url || 'N/A',
+                
+                // Engagement Metrics
+                likes: post.edge_media_preview_like?.count || post.like_count || 0,
+                comments: post.edge_media_to_comment?.count || post.comment_count || 0,
+                views: post.video_view_count || post.play_count || 0,
+                
+                // User Info
+                username: post.owner?.username || post.user?.username || 'Unknown',
+                userId: post.owner?.id || post.user?.id || 'N/A',
+                userFullName: post.owner?.full_name || post.user?.full_name || 'N/A',
+                userFollowers: post.owner?.edge_followed_by?.count || post.user?.follower_count || 0,
+                userFollowing: post.owner?.edge_follow?.count || post.user?.following_count || 0,
+                userPosts: post.owner?.edge_owner_to_timeline_media?.count || post.user?.media_count || 0,
+                
+                // Post Metadata
+                timestamp: post.taken_at_timestamp || post.taken_at || Date.now() / 1000,
+                postedDate: new Date((post.taken_at_timestamp || post.taken_at || Date.now() / 1000) * 1000).toISOString(),
+                location: post.location?.name || 'Not specified',
+                
+                // Hashtags and Mentions
+                hashtags: extractHashtags(post.edge_media_to_caption?.edges[0]?.node?.text || post.caption?.text || ''),
+                mentions: extractMentions(post.edge_media_to_caption?.edges[0]?.node?.text || post.caption?.text || ''),
+                
+                // Additional Media Info
+                isCarousel: post.__typename === 'GraphSidecar' || post.media_type === 'carousel_album',
+                mediaCount: post.edge_sidecar_to_children?.edges?.length || 1
+            };
+        }
+
+        // Helper functions
+        function extractHashtags(text) {
+            const hashtagRegex = /#[a-zA-Z0-9_]+/g;
+            return text.match(hashtagRegex) || [];
+        }
+
+        function extractMentions(text) {
+            const mentionRegex = /@[a-zA-Z0-9_.]+/g;
+            return text.match(mentionRegex) || [];
+        }
+
+        function calculateEngagementRate(likes, comments, followers) {
+            if (followers === 0) return 0;
+            return ((likes + comments) / followers * 100).toFixed(2);
+        }
+
+        // Main function to fetch and display analytics
+        async function fetchAnalytics() {
+            const postUrl = document.getElementById('postUrl').value;
+            const loadingDiv = document.getElementById('loading');
+            const resultsDiv = document.getElementById('results');
+            const fetchBtn = document.getElementById('fetchBtn');
+
+            if (!postUrl) {
+                showError('Please enter an Instagram post URL');
+                return;
+            }
+
+            // Show loading
+            loadingDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            fetchBtn.disabled = true;
+
+            try {
+                console.log('Fetching analytics for:', postUrl);
+                const analytics = await getInstagramPostAnalytics(postUrl);
+                
+                console.log('Analytics received:', analytics);
+                displayResults(analytics);
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showError(`Error: ${error.message}`);
+            } finally {
+                loadingDiv.style.display = 'none';
+                fetchBtn.disabled = false;
+            }
+        }
+
+        function displayResults(analytics) {
+            const resultsDiv = document.getElementById('results');
+            const engagementRate = calculateEngagementRate(analytics.likes, analytics.comments, analytics.userFollowers);
+            
+            resultsDiv.innerHTML = `
+                <div class="success">✅ Analytics fetched successfully!</div>
+                
+                <div class="metric-card">
+                    <div class="metric-title">👤 User Information</div>
+                    <div class="metric-value">@${analytics.username} (${analytics.userFullName})</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">❤️ Likes</div>
+                    <div class="metric-value">${analytics.likes.toLocaleString()}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">💬 Comments</div>
+                    <div class="metric-value">${analytics.comments.toLocaleString()}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">👁️ Views</div>
+                    <div class="metric-value">${analytics.views.toLocaleString()}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">📈 Engagement Rate</div>
+                    <div class="metric-value">${engagementRate}%</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">👥 Followers</div>
+                    <div class="metric-value">${analytics.userFollowers.toLocaleString()}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">📅 Posted Date</div>
+                    <div class="metric-value">${new Date(analytics.postedDate).toLocaleDateString()}</div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-title">
